@@ -296,11 +296,23 @@ app.delete('/api/builds/:buildId', auth, async (req, res) => {
       return res.status(404).json({ error: 'Build no encontrado' });
     }
 
-    // No permitir eliminar el build activo
-    if (build.deployed) {
+    // No permitir eliminar el build activo si hay otros builds disponibles
+    if (build.deployed && metadata.builds.length > 1) {
       return res.status(400).json({
-        error: 'No se puede eliminar el build actualmente desplegado'
+        error: 'No se puede eliminar el build actualmente desplegado. Despliega otro build primero.'
       });
+    }
+
+    // Si es el único build y está desplegado, limpiar active-build
+    if (build.deployed && metadata.builds.length === 1) {
+      try {
+        const files = await fs.readdir(ACTIVE_BUILD_DIR);
+        for (const file of files) {
+          await fs.rm(path.join(ACTIVE_BUILD_DIR, file), { recursive: true, force: true });
+        }
+      } catch (err) {
+        console.error('Error limpiando active-build:', err);
+      }
     }
 
     // Eliminar directorio del build
@@ -308,6 +320,8 @@ app.delete('/api/builds/:buildId', auth, async (req, res) => {
 
     // Actualizar metadata
     metadata.builds = metadata.builds.filter(b => b.id !== buildId);
+    metadata.activeId = null;
+    metadata.lastDeployment = null;
     await saveMetadata(metadata);
 
     res.json({

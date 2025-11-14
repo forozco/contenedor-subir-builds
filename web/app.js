@@ -68,7 +68,7 @@ function renderBuilds() {
   if (builds.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-icon">∅</div>
         <h3>No hay builds disponibles</h3>
         <p>Sube tu primer build usando el área de arriba</p>
       </div>
@@ -90,7 +90,7 @@ function renderBuilds() {
             <small>Subido ${formatDate(date)}</small>
           </div>
           <span class="build-badge ${isActive ? 'active' : 'inactive'}">
-            ${isActive ? '✓ ACTIVO' : 'Disponible'}
+            ${isActive ? 'ACTIVO' : 'Disponible'}
           </span>
         </div>
 
@@ -116,19 +116,19 @@ function renderBuilds() {
         <div class="build-actions">
           ${!isActive ? `
             <button class="btn btn-success" onclick="deployBuild('${build.id}')">
-              🚀 Desplegar
+              Desplegar
             </button>
           ` : `
             <button class="btn btn-primary" disabled>
-              ✓ Desplegado
+              Desplegado
             </button>
           `}
           <button class="btn btn-secondary" onclick="showBuildInfo('${build.id}')">
-            📄 Ver Info
+            Ver Info
           </button>
-          ${!isActive ? `
-            <button class="btn btn-danger" onclick="deleteBuild('${build.id}')">
-              🗑️ Eliminar
+          ${(!isActive || builds.length === 1) ? `
+            <button class="btn btn-danger" onclick="deleteBuild('${build.id}', ${isActive})">
+              Eliminar
             </button>
           ` : ''}
         </div>
