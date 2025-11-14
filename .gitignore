@@ -1,0 +1,25 @@
+# Directorios de datos
+uploads/
+builds/
+active-build/
+
+# Configuración sensible
+.env
+config/client.json
+
+# Node modules
+server/node_modules/
+
+# Logs
+*.log
+nginx-logs/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
