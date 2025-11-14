@@ -296,11 +296,22 @@ app.delete('/api/builds/:buildId', auth, async (req, res) => {
       return res.status(404).json({ error: 'Build no encontrado' });
     }
 
+    console.log('DEBUG - Intentando eliminar build:', {
+      buildId,
+      deployed: build.deployed,
+      totalBuilds: metadata.builds.length
+    });
+
     // No permitir eliminar el build activo si hay otros builds disponibles
     if (build.deployed && metadata.builds.length > 1) {
+      console.log('DEBUG - Rechazando: build activo con otros builds disponibles');
       return res.status(400).json({
-        error: 'No se puede eliminar el build actualmente desplegado. Despliega otro build primero.'
+        error: 'No se puede eliminar el build activamente desplegado. Despliega otro build primero.'
       });
+    }
+
+    if (build.deployed && metadata.builds.length === 1) {
+      console.log('DEBUG - Permitiendo: es el único build y está activo');
     }
 
     // Si es el único build y está desplegado, limpiar active-build
@@ -320,8 +331,13 @@ app.delete('/api/builds/:buildId', auth, async (req, res) => {
 
     // Actualizar metadata
     metadata.builds = metadata.builds.filter(b => b.id !== buildId);
-    metadata.activeId = null;
-    metadata.lastDeployment = null;
+
+    // Solo actualizar activeId si el build eliminado era el activo
+    if (build.deployed) {
+      metadata.activeId = null;
+      metadata.lastDeployment = null;
+    }
+
     await saveMetadata(metadata);
 
     res.json({

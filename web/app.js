@@ -169,8 +169,14 @@ async function deployBuild(buildId) {
   }
 }
 
-async function deleteBuild(buildId) {
-  if (!confirm('¿Estás seguro de eliminar este build? Esta acción no se puede deshacer.')) {
+async function deleteBuild(buildId, isActive) {
+  let confirmMessage = '¿Estás seguro de eliminar este build? Esta acción no se puede deshacer.';
+
+  if (isActive && builds.length === 1) {
+    confirmMessage = '⚠️ Este es el único build disponible y está actualmente desplegado. Al eliminarlo, no habrá ninguna aplicación desplegada. ¿Deseas continuar?';
+  }
+
+  if (!confirm(confirmMessage)) {
     return;
   }
 
@@ -183,14 +189,15 @@ async function deleteBuild(buildId) {
     });
 
     if (!response.ok) {
-      throw new Error('Error al eliminar build');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al eliminar build');
     }
 
     showAlert('Build eliminado exitosamente', 'success');
     await loadBuilds();
   } catch (error) {
     console.error('Error:', error);
-    showAlert('Error al eliminar el build', 'error');
+    showAlert(error.message || 'Error al eliminar el build', 'error');
   }
 }
 
